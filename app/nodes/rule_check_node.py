@@ -14,5 +14,6 @@ def rule_check_node(state):
     return {
         "rule_valid": result["rule_valid"],
         "rule_result": result,
+        "llm_rule_review": result.get("llm_review", {}),
         "logs": state.get("logs", []) + ["Rule check completed"],
     }

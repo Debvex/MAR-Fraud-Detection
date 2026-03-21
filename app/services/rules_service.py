@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 
 from app.config import RULES_PATH
+from app.services.llm_service import review_rule_validation
 
 
 def _load_rules():
@@ -47,7 +48,23 @@ def validate_rules(claimed_category, claimed_points, extracted_text, extracted_f
         rule_valid = False
         reasons.append("Certificate date could not be extracted.")
 
+    llm_review = review_rule_validation(
+        claimed_category=claimed_category,
+        claimed_points=claimed_points,
+        extracted_text=extracted_text,
+        extracted_fields=extracted_fields,
+        heuristic_rule_valid=rule_valid,
+        heuristic_reasons=reasons,
+    )
+    final_rule_valid = rule_valid and llm_review["rule_valid"]
+    final_reasons = reasons.copy()
+    for reason in llm_review.get("reasons", []):
+        if reason not in final_reasons:
+            final_reasons.append(reason)
+
     return {
-        "rule_valid": rule_valid,
-        "reasons": reasons,
+        "rule_valid": final_rule_valid,
+        "reasons": final_reasons,
+        "heuristic_rule_valid": rule_valid,
+        "llm_review": llm_review,
     }

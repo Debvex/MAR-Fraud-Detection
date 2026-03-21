@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, TypedDict
 class GraphState(TypedDict, total=False):
     """State object passed between all workflow nodes."""
 
+    submission_id: str
     file_path: str
     file_name: str
     student_id: str
@@ -29,4 +30,11 @@ class GraphState(TypedDict, total=False):
     decision: str
     review_status: str
     explanation: str
+    alerts: List[Dict[str, Any]]
+    decision_confidence: float
+    processing_status: str
+    llm_document_review: Dict[str, Any]
+    llm_rule_review: Dict[str, Any]
+    llm_decision_review: Dict[str, Any]
+    timeline: List[Dict[str, Any]]
     logs: List[str]
