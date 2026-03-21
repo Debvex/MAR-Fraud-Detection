@@ -1,0 +1,15 @@
+langgraph
+langchain
+openai
+transformers
+torch
+torchvision
+paddleocr
+paddlepaddle
+opencv-python
+pyzbar
+pillow
+imagehash
+python-dotenv
+pydantic
+pypdf

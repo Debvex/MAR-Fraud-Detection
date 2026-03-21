@@ -1,0 +1,16 @@
+{
+  "categories": {
+    "mooc": {
+      "max_points": 20,
+      "keywords": ["course", "completion", "completed", "mooc"]
+    },
+    "internship": {
+      "max_points": 30,
+      "keywords": ["internship", "training", "industry"]
+    },
+    "workshop": {
+      "max_points": 15,
+      "keywords": ["workshop", "participation", "attended"]
+    }
+  }
+}
