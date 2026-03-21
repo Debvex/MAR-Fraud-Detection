@@ -9,5 +9,6 @@ def document_type_node(state):
     return {
         "is_certificate": result["is_certificate"],
         "document_type_confidence": result["confidence"],
+        "llm_document_review": result.get("llm_review", {}),
         "logs": state.get("logs", []) + ["Document type checked"],
     }

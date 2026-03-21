@@ -13,3 +13,6 @@ imagehash
 python-dotenv
 pydantic
 pypdf
+fastapi
+uvicorn
+python-multipart

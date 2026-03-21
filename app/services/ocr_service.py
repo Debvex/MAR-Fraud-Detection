@@ -49,7 +49,7 @@ def _run_paddle_ocr(file_path: str):
     if engine is None:
         return None
 
-    result = engine.ocr(file_path, cls=True)
+    result = engine.predict(file_path, cls=True)
     texts = []
     confidences = []
 
