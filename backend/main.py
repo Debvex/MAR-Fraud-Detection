@@ -2,13 +2,20 @@
 
 from __future__ import annotations
 
+import argparse
 import shutil
+import sys
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+import uvicorn
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from app.config import UPLOADS_DIR, ensure_app_directories
 from app.services.repository import get_submission, init_db, list_submissions
@@ -160,3 +167,22 @@ def dashboard_summary() -> DashboardSummary:
         admin_review_required=admin_review_required,
         likely_valid_pending_human_confirmation=likely_valid,
     )
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    """Create a small CLI so this file can run the backend directly."""
+    parser = argparse.ArgumentParser(description="Run the MAR Fraud Detection FastAPI backend.")
+    parser.add_argument("--host", default="127.0.0.1", help="Host address for the API server.")
+    parser.add_argument("--port", type=int, default=8000, help="Port for the API server.")
+    parser.add_argument("--reload", action="store_true", help="Enable auto-reload during development.")
+    return parser
+
+
+def main() -> None:
+    """Start the FastAPI backend from this module directly."""
+    args = _build_parser().parse_args()
+    uvicorn.run("backend.main:app", host=args.host, port=args.port, reload=args.reload)
+
+
+if __name__ == "__main__":
+    main()

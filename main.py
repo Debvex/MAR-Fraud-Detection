@@ -1,4 +1,4 @@
-"""Command-line entry point for testing the full workflow on any file."""
+"""Root entry point for the API app and optional local CLI processing."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ import argparse
 from pathlib import Path
 
 from app.graph import build_graph
+from backend.main import app
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -77,7 +78,7 @@ def print_result(result: dict) -> None:
         print(f"- {log}")
 
 
-def main() -> None:
+def run_cli() -> None:
     """Run the graph on the provided file."""
     parser = build_parser()
     args = parser.parse_args()
@@ -89,4 +90,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    run_cli()
