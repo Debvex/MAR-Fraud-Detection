@@ -1,17 +1,13 @@
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import {
-  Fingerprint,
-  FileText,
-  Landmark,
-  AlertTriangle,
   History,
   CheckCircle,
   Clock,
 } from "lucide-react";
 import { fetchActivityFeed } from "./FetchSummary";
 
-const ActivityFeed = () => {
+const ActivityFeed = ({ refreshKey = 0 }) => {
   const [data, setData] = useState([]);
 
   useEffect(() => {
@@ -27,17 +23,22 @@ const ActivityFeed = () => {
     };
 
     fetchData();
-  }, []);
+  }, [refreshKey]);
 
   const activities = data?.map((item) => {
+    const riskScore = Number(item.risk_score ?? 0);
+    const reviewStatus = item.review_status
+      ? item.review_status.replaceAll("_", " ")
+      : "pending review";
+
     return {
       id: item.id,
       title: `${item.student_name} uploaded certificate`,
-      subtitle: `${item.file_name} • Risk: ${item.risk_score}%`,
-      status: item.review_status.replaceAll("_", " "),
+      subtitle: `${item.file_name} • Risk: ${riskScore}%`,
+      status: reviewStatus,
       time: new Date(item.created_at).toLocaleString(),
-      bgColor: item.risk_score > 70 ? "bg-red-500/10" : "bg-green-500/10",
-      color: item.risk_score > 70 ? "text-red-400" : "text-green-400",
+      bgColor: riskScore > 70 ? "bg-red-500/10" : "bg-green-500/10",
+      color: riskScore > 70 ? "text-red-400" : "text-green-400",
       icon: item.processing_status === "completed" ? CheckCircle : Clock,
     };
   });
@@ -55,6 +56,11 @@ const ActivityFeed = () => {
       </div>
 
       <div className="space-y-3">
+        {activities?.length === 0 && (
+          <div className="p-4 bg-surface-container rounded-xl border border-outline-variant/10 text-sm text-outline">
+            No submissions yet. Upload a certificate to generate the first risk snapshot.
+          </div>
+        )}
         {activities?.map((item, index) => (
           <motion.div
             key={item.id}

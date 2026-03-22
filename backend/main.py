@@ -68,32 +68,14 @@ def _to_summary(record: dict) -> SubmissionSummary:
     )
 
 
-# def _to_detail(record: dict) -> SubmissionDetail:
-#     base = _to_summary(record).model_dump()
-#     base.update(
-#         explanation=record.get("explanation"),
-#         state=record.get("state", {}),
-#         timeline=record.get("timeline", []),
-#         alerts=record.get("alerts", []),
-#     )
-#     return SubmissionDetail(**base)
-
 def _to_detail(record: dict) -> SubmissionDetail:
-    if not record:
-        raise HTTPException(
-            status_code=500,
-            detail="No record found (DB might be empty)"
-        )
-
-    base = _to_summary(record.get("risk_score", 0)).model_dump()
-
+    base = _to_summary(record).model_dump()
     base.update(
         explanation=record.get("explanation"),
         state=record.get("state", {}),
         timeline=record.get("timeline", []),
         alerts=record.get("alerts", []),
     )
-
     return SubmissionDetail(**base)
 
 

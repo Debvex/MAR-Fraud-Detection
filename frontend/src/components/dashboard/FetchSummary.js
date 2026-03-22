@@ -6,6 +6,9 @@ export const fetchSummary = async () => {
                 "Content-Type": "application/json",
             },
         });
+        if (!response.ok) {
+            throw new Error(`Failed to fetch summary: ${response.status}`);
+        }
         const data = await response.json();
         return data;
     } catch (error) {
@@ -23,6 +26,9 @@ export const fetchActivityFeed = async () => {
                 "Content-Type": "application/json",
             },
         });
+        if (!response.ok) {
+            throw new Error(`Failed to fetch submissions: ${response.status}`);
+        }
         const data = await response.json();
         return data;
     } catch (error) {

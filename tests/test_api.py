@@ -14,6 +14,7 @@ from backend.main import app
 
 
 HASH_STORE = ROOT_DIR / "app" / "data" / "hashes" / "hash_store.json"
+SUBMISSIONS_STORE = ROOT_DIR / "app" / "data" / "submissions_store.json"
 SAMPLE_FILE = ROOT_DIR / "sample_certificate.pdf"
 
 
@@ -21,8 +22,13 @@ def _reset_hash_store() -> None:
     HASH_STORE.write_text("[]", encoding="utf-8")
 
 
+def _reset_submission_store(payload: str = "") -> None:
+    SUBMISSIONS_STORE.write_text(payload, encoding="utf-8")
+
+
 def test_upload_and_core_api_flow():
     _reset_hash_store()
+    _reset_submission_store("")
     with TestClient(app) as client:
         with SAMPLE_FILE.open("rb") as upload:
             response = client.post(
@@ -55,7 +61,9 @@ def test_upload_and_core_api_flow():
 
         summary = client.get("/api/dashboard/summary")
         assert summary.status_code == 200
-        assert summary.json()["total_submissions"] >= 1
+        summary_payload = summary.json()
+        assert summary_payload["total_submissions"] == 1
+        assert summary_payload["average_risk_score"] == payload["risk_score"]
 
 
 if __name__ == "__main__":

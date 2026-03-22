@@ -26,14 +26,14 @@ import { ReportsTable } from "../components/reports/ReportsTable";
 import { fetchSummary } from "../components/dashboard/FetchSummary";
 
 export default function Home() {
-  const { data, setSidebarData } = useContext(SideBarData);
+  const { data } = useContext(SideBarData);
   const [summary, setSummary] = useState(null);
+  const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0);
 
   useEffect(() => {
     const getData = async () => {
       try {
         const fetchSummaryData = await fetchSummary();
-        console.log("Fetched Summary Data:", fetchSummaryData);
         setSummary(fetchSummaryData);
       } catch (err) {
         console.error("Error fetching summary:", err);
@@ -41,7 +41,29 @@ export default function Home() {
     };
 
     getData();
-  }, []);
+  }, [dashboardRefreshKey]);
+
+  const handleUploadSuccess = (submission) => {
+    setSummary((previous) => {
+      if (!previous || previous.total_submissions === 0) {
+        return {
+          total_submissions: 1,
+          average_risk_score: Number(submission?.risk_score ?? 0),
+          rule_validation_rate: submission?.state?.rule_valid ? 100 : 0,
+          duplicate_rejections: submission?.duplicate_found ? 1 : 0,
+          admin_review_required: submission?.review_status === "admin_review_required" ? 1 : 0,
+          likely_valid_pending_human_confirmation:
+            submission?.review_status === "likely_valid_pending_human_confirmation" ? 1 : 0,
+        };
+      }
+
+      return {
+        ...previous,
+        total_submissions: previous.total_submissions + 1,
+      };
+    });
+    setDashboardRefreshKey((value) => value + 1);
+  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -106,7 +128,7 @@ export default function Home() {
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
               <div className="lg:col-span-12">
-                <ActivityFeed />
+                <ActivityFeed refreshKey={dashboardRefreshKey} />
               </div>
             </div>
           </div>
@@ -133,7 +155,7 @@ export default function Home() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
-                <UploadZone />
+                <UploadZone onUploadSuccess={handleUploadSuccess} />
               </div>
               <div className="lg:col-span-1">
                 <QueueHealth />

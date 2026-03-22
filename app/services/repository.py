@@ -12,14 +12,10 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-# def _read_all() -> list[dict]:
-#     ensure_app_directories()
-#     if not SUBMISSIONS_STORE_PATH.exists():
-#         return []
-#     with SUBMISSIONS_STORE_PATH.open("r", encoding="utf-8") as file:
-#         if not file:
-#             return []
-#         return json.load(file)
+def _normalize_items(payload: object) -> list[dict]:
+    if isinstance(payload, list):
+        return [item for item in payload if isinstance(item, dict)]
+    return []
 
 def _read_all() -> list[dict]:
     ensure_app_directories()
@@ -27,8 +23,11 @@ def _read_all() -> list[dict]:
         return []
     try:
         with SUBMISSIONS_STORE_PATH.open("r", encoding="utf-8") as file:
-            return json.load(file)
-    except json.JSONDecodeError:
+            raw = file.read().strip()
+        if not raw:
+            return []
+        return _normalize_items(json.loads(raw))
+    except (OSError, json.JSONDecodeError):
         return []
 
 

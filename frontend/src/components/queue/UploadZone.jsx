@@ -1,17 +1,16 @@
 import React, { useRef, useState, useEffect, useContext } from "react";
 import { FileText, ImageIcon, Upload, UploadCloud, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import { SideBarData } from "../../context/SideBarContext";
-import { fetchSummary } from "../dashboard/FetchSummary";
 
-function UploadZone() {
+function UploadZone({ onUploadSuccess }) {
   const [isFileUploaderOpen, setIsFileUploaderOpen] = useState(false);
   const [file, setFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const fileInputRef = useRef(null);
-  const naviagete = useNavigate();
-  const { data, setSidebarData } = useContext(SideBarData);
+  const { setSidebarData } = useContext(SideBarData);
 
   const handleFiles = (newFiles) => {
     const validTypes = ["application/pdf", "image/jpeg", "image/png"];
@@ -21,6 +20,7 @@ function UploadZone() {
     );
 
     if (selected.length > 0) {
+      setErrorMessage("");
       // 🔥 revoke old preview
       if (file?.preview) {
         URL.revokeObjectURL(file.preview);
@@ -49,6 +49,7 @@ function UploadZone() {
 
   const removeFile = () => {
     if (file?.preview) URL.revokeObjectURL(file.preview);
+    setErrorMessage("");
     setFile(null);
   };
 
@@ -75,20 +76,21 @@ function UploadZone() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission logic here
+    if (!file) {
+      setErrorMessage("Select one PDF or image before submitting.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage("");
     const data = new FormData();
 
-    data.append("file", file); // 👈 file added here
+    data.append("file", file);
     data.append("student_id", formData.student_id);
     data.append("student_name", formData.student_name);
     data.append("claimed_category", formData.claimed_category);
     data.append("claimed_points", formData.claimed_points);
 
-    for (let [key, value] of data.entries()) {
-      console.log(key, value);
-    }
-
-    //Call your API with the form data
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BASE_URL}/api/submissions/upload`,
@@ -98,13 +100,20 @@ function UploadZone() {
         },
       );
 
+      if (!response.ok) {
+        const errorPayload = await response.json().catch(() => null);
+        throw new Error(errorPayload?.detail || `Upload failed with status ${response.status}`);
+      }
+
       const result = await response.json();
-      console.log("Upload successful:", result);
-      const fetchAllSummaryData = await fetchSummary()
-      console.log("Fetched summary data:", fetchAllSummaryData);
+      onUploadSuccess?.(result);
       setSidebarData("dashboard");
+      setIsFileUploaderOpen(false);
     } catch (error) {
       console.error("Error uploading file:", error);
+      setErrorMessage(error.message || "Upload failed.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -249,11 +258,15 @@ function UploadZone() {
           </div>
 
           <button
-            className="w-full px-6 py-3 bg-blue-600 text-white font-bold rounded-lg text-sm hover:bg-blue-500 transition-all active:scale-95"
+            className="w-full px-6 py-3 bg-blue-600 text-white font-bold rounded-lg text-sm hover:bg-blue-500 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
             type="submit"
+            disabled={isSubmitting}
           >
-            Scan Documents and Details
+            {isSubmitting ? "Processing Upload..." : "Scan Documents and Details"}
           </button>
+          {errorMessage && (
+            <p className="text-sm text-red-400">{errorMessage}</p>
+          )}
         </form>
       )}
     </motion.div>
