@@ -21,7 +21,7 @@ def _reset_hash_store() -> None:
     HASH_STORE.write_text("[]", encoding="utf-8")
 
 
-def test_upload_and_dashboard_flow():
+def test_upload_and_core_api_flow():
     _reset_hash_store()
     with TestClient(app) as client:
         with SAMPLE_FILE.open("rb") as upload:
@@ -48,38 +48,16 @@ def test_upload_and_dashboard_flow():
         assert detail.status_code == 200
         assert detail.json()["id"] == submission_id
 
-        timeline = client.get(f"/api/submissions/{submission_id}/timeline")
-        assert timeline.status_code == 200
-        assert len(timeline.json()["timeline"]) >= 3
-
-        node_state = client.get(f"/api/submissions/{submission_id}/states/decision_node")
-        assert node_state.status_code == 200
-        assert node_state.json()["node"] == "decision_node"
-
-        queue = client.get("/api/dashboard/queue")
-        assert queue.status_code == 200
-        assert any(item["id"] == submission_id for item in queue.json())
+        tools = client.get("/api/workflow/tools")
+        assert tools.status_code == 200
+        assert any(item["name"] == "ocr_tool" for item in tools.json())
+        assert any(item["name"] == "issuer_verification_tool" for item in tools.json())
 
         summary = client.get("/api/dashboard/summary")
         assert summary.status_code == 200
         assert summary.json()["total_submissions"] >= 1
 
-        alerts = client.get("/api/dashboard/alerts")
-        assert alerts.status_code == 200
-        assert "items" in alerts.json()
-
-        rules = client.get("/api/rules")
-        assert rules.status_code == 200
-        assert "categories" in rules.json()
-
-        review_update = client.patch(
-            f"/api/submissions/{submission_id}/review-status",
-            json={"review_status": "admin_review_required"},
-        )
-        assert review_update.status_code == 200
-        assert review_update.json()["review_status"] == "admin_review_required"
-
 
 if __name__ == "__main__":
-    test_upload_and_dashboard_flow()
+    test_upload_and_core_api_flow()
     print("API smoke test passed.")

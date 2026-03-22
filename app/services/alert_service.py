@@ -47,4 +47,15 @@ def build_alerts(state: dict) -> list[dict]:
             }
         )
 
+    issuer_result = state.get("issuer_verification_result", {}) or {}
+    if issuer_result.get("handled") and issuer_result.get("status") == "suspicious":
+        alerts.append(
+            {
+                "type": "issuer_verification_mismatch",
+                "severity": "high",
+                "title": "Issuer Verification Mismatch",
+                "message": "; ".join(issuer_result.get("reasons", [])) or "Issuer-specific verification flagged the certificate.",
+            }
+        )
+
     return alerts

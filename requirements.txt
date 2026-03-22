@@ -16,3 +16,4 @@ pypdf
 fastapi
 uvicorn
 python-multipart
+langchain-openai

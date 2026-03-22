@@ -25,6 +25,12 @@ def calculate_risk_score(state):
     if student_name and extracted_name and student_name.lower() != extracted_name.lower():
         score += 20
 
+    issuer_result = state.get("issuer_verification_result", {}) or {}
+    if issuer_result.get("handled") and issuer_result.get("status") == "suspicious":
+        score += 20
+    if state.get("issuer_verified"):
+        score = max(0, score - 10)
+
     suspicious = score >= 50
     return {
         "risk_score": score,

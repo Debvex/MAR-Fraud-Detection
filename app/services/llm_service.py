@@ -199,6 +199,58 @@ def review_final_decision(state) -> Dict[str, Any]:
     }
 
 
+def choose_next_verification_tool(state: Dict[str, Any], available_tools: list[str]) -> Dict[str, Any]:
+    """Choose the next LangChain tool based on missing proof in the state."""
+    executed_tools = [item.get("tool_name") for item in state.get("tool_runs", [])]
+    fallback = _fallback_next_tool(state, available_tools, executed_tools)
+
+    result = _call_json_model(
+        system_prompt=(
+            "You are a verification planner for certificate authenticity analysis."
+            " Choose exactly one next tool to gather missing proof, or route to review"
+            " only when the case already has enough evidence."
+        ),
+        user_prompt=(
+            f"Available tools: {json.dumps(available_tools)}\n"
+            f"Already executed tools: {json.dumps(executed_tools)}\n"
+            f"Current state: {json.dumps(state, default=str, ensure_ascii=True)[:7000]}\n\n"
+            'Return keys: action ("run_tool" or "route_review"), tool_name (string or null), reason (string).'
+        ),
+    )
+    if result is None:
+        return fallback
+
+    tool_name = result.get("tool_name")
+    if result.get("action") == "run_tool" and tool_name not in available_tools:
+        return fallback
+    return {
+        "action": str(result.get("action", fallback["action"])),
+        "tool_name": tool_name,
+        "reason": str(result.get("reason", fallback["reason"])),
+    }
+
+
+def _fallback_next_tool(state: Dict[str, Any], available_tools: list[str], executed_tools: list[str]) -> Dict[str, Any]:
+    """Deterministic planner fallback for tool selection."""
+    if "ocr_tool" not in executed_tools and not state.get("extracted_text"):
+        return {"action": "run_tool", "tool_name": "ocr_tool", "reason": "OCR evidence is missing."}
+    if "document_type_tool" not in executed_tools and "document_type_tool" in available_tools:
+        return {"action": "run_tool", "tool_name": "document_type_tool", "reason": "Document type proof is missing."}
+    if "qr_tool" not in executed_tools and "qr_tool" in available_tools:
+        return {"action": "run_tool", "tool_name": "qr_tool", "reason": "QR verification has not been checked yet."}
+    if "issuer_verification_tool" not in executed_tools and state.get("extracted_text"):
+        return {"action": "run_tool", "tool_name": "issuer_verification_tool", "reason": "Issuer-specific verification is missing."}
+    if "duplicate_check_tool" not in executed_tools and state.get("extracted_text"):
+        return {"action": "run_tool", "tool_name": "duplicate_check_tool", "reason": "Duplicate evidence is missing."}
+    if "rule_check_tool" not in executed_tools and state.get("extracted_text"):
+        return {"action": "run_tool", "tool_name": "rule_check_tool", "reason": "MAR rule validation is missing."}
+    if "risk_score_tool" not in executed_tools:
+        return {"action": "run_tool", "tool_name": "risk_score_tool", "reason": "Risk score has not been computed."}
+    if "decision_tool" not in executed_tools:
+        return {"action": "run_tool", "tool_name": "decision_tool", "reason": "Final routing decision is missing."}
+    return {"action": "route_review", "tool_name": None, "reason": "All verification tools already ran."}
+
+
 def generate_explanation(state):
     """Return a short, readable admin explanation."""
     client = _get_client()

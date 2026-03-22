@@ -1,4 +1,4 @@
-"""Workflow orchestration with per-node state tracing."""
+"""Simple workflow orchestration with agent-selected LangChain tools."""
 
 from __future__ import annotations
 
@@ -7,36 +7,18 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-from app.nodes.admin_review_node import admin_review_node
-from app.nodes.decision_node import decision_node
-from app.nodes.document_type_node import document_type_node
-from app.nodes.duplicate_check_node import duplicate_check_node
-from app.nodes.end_node import end_node
-from app.nodes.explanation_node import explanation_node
-from app.nodes.mark_valid_node import mark_valid_node
-from app.nodes.ocr_node import ocr_node
-from app.nodes.qr_node import qr_node
-from app.nodes.risk_score_node import risk_score_node
-from app.nodes.rule_check_node import rule_check_node
+from app.nodes.final_node import final_node
+from app.nodes.review_node import review_node
 from app.nodes.start_node import start_node
+from app.nodes.tool_runner_node import tool_runner_node
+from app.nodes.verification_agent_node import verification_agent_node
 from app.services.alert_service import build_alerts
 from app.services.repository import get_submission, save_submission
+from app.services.tool_service import TOOL_REGISTRY
 
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
-
-
-NODE_ORDER = [
-    ("start_node", start_node),
-    ("document_type_node", document_type_node),
-    ("ocr_node", ocr_node),
-    ("qr_node", qr_node),
-    ("duplicate_check_node", duplicate_check_node),
-    ("rule_check_node", rule_check_node),
-    ("risk_score_node", risk_score_node),
-    ("decision_node", decision_node),
-]
 
 
 def _sanitize_state(state: dict) -> dict:
@@ -44,60 +26,45 @@ def _sanitize_state(state: dict) -> dict:
     return copy.deepcopy(state)
 
 
+def _append_timeline(timeline: list[dict], node_name: str, updates: dict, state: dict) -> None:
+    timeline.append(
+        {
+            "node": node_name,
+            "timestamp": _utc_now(),
+            "updates": copy.deepcopy(updates),
+            "state": _sanitize_state(state),
+        }
+    )
+
+
 def run_workflow(initial_state: dict) -> dict:
-    """Run the workflow while capturing every node update."""
+    """Run the simple planner-plus-tool-runner workflow and capture every step."""
     state = copy.deepcopy(initial_state)
     timeline = []
 
-    for node_name, node_func in NODE_ORDER:
-        updates = node_func(state)
-        state.update(updates)
-        timeline.append(
-            {
-                "node": node_name,
-                "timestamp": _utc_now(),
-                "updates": copy.deepcopy(updates),
-                "state": _sanitize_state(state),
-            }
-        )
+    updates = start_node(state)
+    state.update(updates)
+    _append_timeline(timeline, "start_node", updates, state)
 
-    if state.get("decision") == "admin_review":
-        updates = admin_review_node(state)
+    while not state.get("decision"):
+        updates = verification_agent_node(state)
         state.update(updates)
-        timeline.append(
-            {
-                "node": "admin_review_node",
-                "timestamp": _utc_now(),
-                "updates": copy.deepcopy(updates),
-                "state": _sanitize_state(state),
-            }
-        )
-    else:
-        updates = mark_valid_node(state)
-        state.update(updates)
-        timeline.append(
-            {
-                "node": "mark_valid_node",
-                "timestamp": _utc_now(),
-                "updates": copy.deepcopy(updates),
-                "state": _sanitize_state(state),
-            }
-        )
+        _append_timeline(timeline, "verification_agent_node", updates, state)
 
-    for node_name, node_func in [
-        ("explanation_node", explanation_node),
-        ("end_node", end_node),
-    ]:
-        updates = node_func(state)
+        if state.get("decision"):
+            break
+
+        updates = tool_runner_node(state)
         state.update(updates)
-        timeline.append(
-            {
-                "node": node_name,
-                "timestamp": _utc_now(),
-                "updates": copy.deepcopy(updates),
-                "state": _sanitize_state(state),
-            }
-        )
+        _append_timeline(timeline, "tool_runner_node", updates, state)
+
+    updates = review_node(state)
+    state.update(updates)
+    _append_timeline(timeline, "review_node", updates, state)
+
+    updates = final_node(state)
+    state.update(updates)
+    _append_timeline(timeline, "final_node", updates, state)
 
     state["alerts"] = build_alerts(state)
     state["timeline"] = timeline
@@ -124,6 +91,8 @@ def process_submission(
         "claimed_category": claimed_category,
         "claimed_points": claimed_points,
         "processing_status": "running",
+        "available_tools": list(TOOL_REGISTRY.keys()),
+        "tool_runs": [],
         "logs": [],
     }
 

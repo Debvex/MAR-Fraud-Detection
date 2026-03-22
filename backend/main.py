@@ -1,22 +1,30 @@
-"""FastAPI backend for the MAR fraud analysis workflow."""
+"""Simple FastAPI backend for the agentic MAR fraud workflow."""
 
 from __future__ import annotations
 
-import json
 import shutil
 import uuid
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.config import RULES_PATH, UPLOADS_DIR, ensure_app_directories
-from app.services.repository import get_submission, init_db, list_submissions, update_review_status
+from app.config import UPLOADS_DIR, ensure_app_directories
+from app.services.repository import get_submission, init_db, list_submissions
+from app.services.tool_service import get_tool_catalog
 from app.services.workflow_service import process_submission
-from backend.schemas import DashboardSummary, ReviewStatusUpdate, RulesResponse, SubmissionDetail, SubmissionSummary
+from backend.schemas import DashboardSummary, SubmissionDetail, SubmissionSummary, ToolCatalogItem
 
 
-app = FastAPI(title="MAR Fraud Detection API", version="1.0.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    ensure_app_directories()
+    init_db()
+    yield
+
+
+app = FastAPI(title="MAR Fraud Detection API", version="1.0.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,12 +32,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-def on_startup() -> None:
-    ensure_app_directories()
-    init_db()
 
 
 def _save_upload(upload: UploadFile) -> Path:
@@ -70,12 +72,27 @@ def _to_detail(record: dict) -> SubmissionDetail:
     return SubmissionDetail(**base)
 
 
-@app.get("/api/health")
+@app.get("/api/health", summary="Health Check", description="Quick API health endpoint for connectivity checks.")
 def health() -> dict:
     return {"status": "ok"}
 
 
-@app.post("/api/submissions/upload", response_model=SubmissionDetail)
+@app.get(
+    "/api/workflow/tools",
+    response_model=list[ToolCatalogItem],
+    summary="List Workflow Tools",
+    description="Returns the fixed LangChain tool set that the verification planner is allowed to use.",
+)
+def workflow_tools() -> list[ToolCatalogItem]:
+    return [ToolCatalogItem(**item) for item in get_tool_catalog()]
+
+
+@app.post(
+    "/api/submissions/upload",
+    response_model=SubmissionDetail,
+    summary="Upload And Process Submission",
+    description="Uploads one certificate file and runs it through the full agentic verification workflow.",
+)
 def upload_submission(
     file: UploadFile = File(...),
     student_id: str = Form(...),
@@ -95,12 +112,22 @@ def upload_submission(
     return _to_detail(record)
 
 
-@app.get("/api/submissions", response_model=list[SubmissionSummary])
+@app.get(
+    "/api/submissions",
+    response_model=list[SubmissionSummary],
+    summary="List Processed Submissions",
+    description="Returns the most recent processed submissions in compact list form.",
+)
 def get_submissions() -> list[SubmissionSummary]:
-    return [_to_summary(record) for record in list_submissions()]
+    return [_to_summary(record) for record in list_submissions(limit=100)]
 
 
-@app.get("/api/submissions/{submission_id}", response_model=SubmissionDetail)
+@app.get(
+    "/api/submissions/{submission_id}",
+    response_model=SubmissionDetail,
+    summary="Get Submission Detail",
+    description="Returns the full stored result for one processed submission, including state, timeline, and alerts.",
+)
 def get_submission_detail(submission_id: str) -> SubmissionDetail:
     record = get_submission(submission_id)
     if record is None:
@@ -108,34 +135,12 @@ def get_submission_detail(submission_id: str) -> SubmissionDetail:
     return _to_detail(record)
 
 
-@app.get("/api/submissions/{submission_id}/timeline")
-def get_submission_timeline(submission_id: str) -> dict:
-    record = get_submission(submission_id)
-    if record is None:
-        raise HTTPException(status_code=404, detail="Submission not found")
-    return {"id": submission_id, "timeline": record.get("timeline", [])}
-
-
-@app.get("/api/submissions/{submission_id}/states/{node_name}")
-def get_submission_state_for_node(submission_id: str, node_name: str) -> dict:
-    record = get_submission(submission_id)
-    if record is None:
-        raise HTTPException(status_code=404, detail="Submission not found")
-    for entry in record.get("timeline", []):
-        if entry.get("node") == node_name:
-            return entry
-    raise HTTPException(status_code=404, detail="Node state not found")
-
-
-@app.patch("/api/submissions/{submission_id}/review-status", response_model=SubmissionDetail)
-def patch_review_status(submission_id: str, payload: ReviewStatusUpdate) -> SubmissionDetail:
-    record = update_review_status(submission_id, payload.review_status)
-    if record is None:
-        raise HTTPException(status_code=404, detail="Submission not found")
-    return _to_detail(record)
-
-
-@app.get("/api/dashboard/summary", response_model=DashboardSummary)
+@app.get(
+    "/api/dashboard/summary",
+    response_model=DashboardSummary,
+    summary="Get Dashboard Summary",
+    description="Returns compact aggregate metrics for beginner-friendly dashboard display.",
+)
 def dashboard_summary() -> DashboardSummary:
     submissions = list_submissions(limit=1000)
     total = len(submissions)
@@ -155,31 +160,3 @@ def dashboard_summary() -> DashboardSummary:
         admin_review_required=admin_review_required,
         likely_valid_pending_human_confirmation=likely_valid,
     )
-
-
-@app.get("/api/dashboard/alerts")
-def dashboard_alerts() -> dict:
-    submissions = list_submissions(limit=100)
-    alerts = []
-    for item in submissions:
-        for alert in item.get("alerts", []):
-            alerts.append(
-                {
-                    "submission_id": item["id"],
-                    "student_id": item["student_id"],
-                    "student_name": item["student_name"],
-                    "decision": item.get("decision"),
-                    **alert,
-                }
-            )
-    return {"items": alerts[:50]}
-
-
-@app.get("/api/dashboard/queue", response_model=list[SubmissionSummary])
-def dashboard_queue() -> list[SubmissionSummary]:
-    return [_to_summary(record) for record in list_submissions(limit=200)]
-
-
-@app.get("/api/rules", response_model=RulesResponse)
-def get_rules() -> RulesResponse:
-    return RulesResponse(**json.loads(RULES_PATH.read_text(encoding="utf-8")))

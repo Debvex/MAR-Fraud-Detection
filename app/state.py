@@ -36,5 +36,16 @@ class GraphState(TypedDict, total=False):
     llm_document_review: Dict[str, Any]
     llm_rule_review: Dict[str, Any]
     llm_decision_review: Dict[str, Any]
+    issuer_adapter_name: str
+    issuer_verified: bool
+    issuer_verification_mode: str
+    issuer_verification_result: Dict[str, Any]
+    agent_plan: Dict[str, Any]
+    tool_runs: List[Dict[str, Any]]
+    available_tools: List[str]
+    next_tool_name: str
+    next_tool_reason: str
+    verification_complete: bool
+    current_step: str
     timeline: List[Dict[str, Any]]
     logs: List[str]
