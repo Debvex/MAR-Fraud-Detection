@@ -1,38 +1,13 @@
 """Risk scoring service."""
 
+from app.services.llm_service import review_risk_score
+
 
 def calculate_risk_score(state):
-    """Apply the basic rule-based scoring from the README."""
-    score = 0
-
-    if not state.get("is_certificate", False):
-        score += 40
-
-    if not state.get("qr_found", False):
-        score += 10
-
-    if state.get("duplicate_found", False):
-        score += 30
-
-    if not state.get("rule_valid", True):
-        score += 25
-
-    if state.get("ocr_confidence", 1.0) < 0.50:
-        score += 10
-
-    extracted_name = (state.get("extracted_fields", {}) or {}).get("name")
-    student_name = state.get("student_name")
-    if student_name and extracted_name and student_name.lower() != extracted_name.lower():
-        score += 20
-
-    issuer_result = state.get("issuer_verification_result", {}) or {}
-    if issuer_result.get("handled") and issuer_result.get("status") == "suspicious":
-        score += 20
-    if state.get("issuer_verified"):
-        score = max(0, score - 10)
-
-    suspicious = score >= 50
+    """Delegate fraud-risk scoring to OpenAI."""
+    result = review_risk_score(state)
     return {
-        "risk_score": score,
-        "suspicious": suspicious,
+        "risk_score": result["risk_score"],
+        "suspicious": result["suspicious"],
+        "llm_risk_review": result,
     }

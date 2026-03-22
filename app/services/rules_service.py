@@ -15,56 +15,18 @@ def _load_rules():
 
 
 def validate_rules(claimed_category, claimed_points, extracted_text, extracted_fields):
-    """Validate basic category, points, and required field rules."""
+    """Validate MAR rules through OpenAI using the rule file as context."""
     rules = _load_rules()
-    category_key = (claimed_category or "").strip().lower()
-    text = (extracted_text or "").lower()
-    reasons = []
-    rule_valid = True
-
-    if claimed_points <= 0:
-        rule_valid = False
-        reasons.append("Claimed points must be greater than zero.")
-
-    if not (extracted_text or "").strip():
-        rule_valid = False
-        reasons.append("No OCR text extracted from the file.")
-
-    category_rule = rules.get("categories", {}).get(category_key)
-    if category_rule is None:
-        rule_valid = False
-        reasons.append("Claimed category is not defined in MAR rules.")
-    else:
-        if claimed_points > category_rule["max_points"]:
-            rule_valid = False
-            reasons.append("Claimed points exceed the allowed maximum for the category.")
-
-        keywords = category_rule.get("keywords", [])
-        if keywords and not any(keyword in text for keyword in keywords):
-            rule_valid = False
-            reasons.append("Certificate text does not strongly match the claimed category.")
-
-    if not extracted_fields.get("date"):
-        rule_valid = False
-        reasons.append("Certificate date could not be extracted.")
-
     llm_review = review_rule_validation(
         claimed_category=claimed_category,
         claimed_points=claimed_points,
         extracted_text=extracted_text,
         extracted_fields=extracted_fields,
-        heuristic_rule_valid=rule_valid,
-        heuristic_reasons=reasons,
+        rules_context=rules,
     )
-    final_rule_valid = rule_valid and llm_review["rule_valid"]
-    final_reasons = reasons.copy()
-    for reason in llm_review.get("reasons", []):
-        if reason not in final_reasons:
-            final_reasons.append(reason)
 
     return {
-        "rule_valid": final_rule_valid,
-        "reasons": final_reasons,
-        "heuristic_rule_valid": rule_valid,
+        "rule_valid": llm_review["rule_valid"],
+        "reasons": llm_review.get("reasons", []),
         "llm_review": llm_review,
     }
