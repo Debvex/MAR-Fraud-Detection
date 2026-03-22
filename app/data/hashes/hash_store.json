@@ -4,5 +4,23 @@
     "hash": "c7cdcdf84a6fecba7c6c163668790529c72805707740d8e24f0164a71803ca8f",
     "certificate_id": null,
     "text_length": 471
+  },
+  {
+    "file_path": "D:\\Hackthon\\Binary 2026\\MAR-Fraud-Detection\\app\\data\\uploads\\77ba0c8d-3fff-45b0-8824-4cac73701b0c.png",
+    "hash": "b278a65a5d9b802e1d14923ac41bc5c360aa9a1b1f42475c14e11e8897f245a0",
+    "certificate_id": null,
+    "text_length": 0
+  },
+  {
+    "file_path": "D:\\Hackthon\\Binary 2026\\MAR-Fraud-Detection\\app\\data\\uploads\\7e0adb87-9dab-49c2-a3bd-4a8cacf0cc36.jpg",
+    "hash": "826a539ff79733f276c72b57cb573d7a6b66287696efc44eb4abd694ea7a78f9",
+    "certificate_id": null,
+    "text_length": 0
+  },
+  {
+    "file_path": "D:\\Hackthon\\Binary 2026\\MAR-Fraud-Detection\\app\\data\\uploads\\bb398819-4ab4-4f84-b536-a52569f527a9.jpg",
+    "hash": "4f1be8c9f9605a41104bba527481c2d05ce9e46e9f2f96d4140f776577e88dcb",
+    "certificate_id": null,
+    "text_length": 0
   }
 ]

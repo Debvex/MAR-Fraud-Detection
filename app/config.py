@@ -1,11 +1,11 @@
 """Shared configuration helpers for the project."""
-
 from __future__ import annotations
+from dotenv import load_dotenv
 
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
+
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,7 +22,7 @@ load_dotenv(BASE_DIR / ".env")
 
 def get_openai_api_key() -> str | None:
     """Return the OpenAI API key when configured."""
-    return os.getenv("OPENAI_API_KEY")
+    return "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"
 
 
 def ensure_app_directories() -> None:

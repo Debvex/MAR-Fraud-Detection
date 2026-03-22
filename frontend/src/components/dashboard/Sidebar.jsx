@@ -153,20 +153,6 @@ const SidebarContent = ({
           active={data === "queue"}
           isMobile={isMobile}
         />
-        <NavItem
-          icon={BarChart3}
-          label="Reports"
-          onClick={() => handleNavClick("reports")}
-          active={data === "reports"}
-          isMobile={isMobile}
-        />
-        <NavItem
-          icon={Settings}
-          label="Settings"
-          onClick={() => handleNavClick("settings")}
-          active={data === "settings"}
-          isMobile={isMobile}
-        />
       </nav>
 
       <div className="mt-auto pt-6 space-y-2 border-t border-outline-variant/10 px-2">
