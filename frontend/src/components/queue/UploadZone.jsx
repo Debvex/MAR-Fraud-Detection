@@ -1,25 +1,37 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useContext } from "react";
 import { FileText, ImageIcon, Upload, UploadCloud, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { SideBarData } from "../../context/SideBarContext";
+import { fetchSummary } from "../dashboard/FetchSummary";
 
 function UploadZone() {
   const [isFileUploaderOpen, setIsFileUploaderOpen] = useState(false);
-  const [files, setFiles] = useState([]);
+  const [file, setFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
+  const naviagete = useNavigate();
+  const { data, setSidebarData } = useContext(SideBarData);
 
   const handleFiles = (newFiles) => {
     const validTypes = ["application/pdf", "image/jpeg", "image/png"];
 
-    const selected = Array.from(newFiles)
-      .filter((file) => validTypes.includes(file.type))
-      .map((file) =>
-        Object.assign(file, {
-          preview: URL.createObjectURL(file),
-        }),
-      );
+    const selected = Array.from(newFiles).filter((f) =>
+      validTypes.includes(f.type),
+    );
 
-    setFiles((prev) => [...prev, ...selected]);
+    if (selected.length > 0) {
+      // 🔥 revoke old preview
+      if (file?.preview) {
+        URL.revokeObjectURL(file.preview);
+      }
+
+      const singleFile = Object.assign(selected[0], {
+        preview: URL.createObjectURL(selected[0]),
+      });
+
+      setFile(singleFile);
+    }
   };
 
   const onDragOver = (e) => {
@@ -35,18 +47,66 @@ function UploadZone() {
     handleFiles(e.dataTransfer.files);
   };
 
-  const removeFile = (index) => {
-    const fileToRemove = files[index];
-    URL.revokeObjectURL(fileToRemove.preview);
-    setFiles(files.filter((_, i) => i !== index));
+  const removeFile = () => {
+    if (file?.preview) URL.revokeObjectURL(file.preview);
+    setFile(null);
   };
 
   // Cleanup
   useEffect(() => {
     return () => {
-      files.forEach((file) => URL.revokeObjectURL(file.preview));
+      if (file?.preview) {
+        URL.revokeObjectURL(file.preview);
+      }
     };
-  }, [files]);
+  }, [file]);
+
+  const [formData, setFormData] = useState({
+    student_id: "",
+    student_name: "",
+    claimed_category: "",
+    claimed_points: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    // Handle form submission logic here
+    const data = new FormData();
+
+    data.append("file", file); // 👈 file added here
+    data.append("student_id", formData.student_id);
+    data.append("student_name", formData.student_name);
+    data.append("claimed_category", formData.claimed_category);
+    data.append("claimed_points", formData.claimed_points);
+
+    for (let [key, value] of data.entries()) {
+      console.log(key, value);
+    }
+
+    //Call your API with the form data
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/submissions/upload`,
+        {
+          method: "POST",
+          body: data,
+        },
+      );
+
+      const result = await response.json();
+      console.log("Upload successful:", result);
+      const fetchAllSummaryData = await fetchSummary()
+      console.log("Fetched summary data:", fetchAllSummaryData);
+      setSidebarData("dashboard");
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
+  };
 
   return (
     <motion.div
@@ -68,7 +128,7 @@ function UploadZone() {
             className="px-6 py-2 bg-primary-container text-[#001a41] font-bold rounded-lg text-sm hover:opacity-90 transition-opacity active:scale-95"
             onClick={() => setIsFileUploaderOpen(true)}
           >
-            Select Files
+            Select Files and Fill Details
           </button>
           <button className="px-6 py-2 bg-white/5 text-white font-bold rounded-lg text-sm hover:bg-white/10 transition-all active:scale-95">
             Bulk Import
@@ -77,74 +137,124 @@ function UploadZone() {
       )}
 
       {isFileUploaderOpen && (
-        <div className="w-full max-w-3xl mx-auto space-y-4">
-          {/* Drop Zone */}
-          <div
-            onDragOver={onDragOver}
-            onDragLeave={onDragLeave}
-            onDrop={onDrop}
-            onClick={() => fileInputRef.current.click()}
-            className={`p-10 border-2 border-dashed rounded-2xl ${
-              isDragging
-                ? "border-blue-500 bg-blue-500/10"
-                : "border-white/10 bg-white/5"
-            }`}
+        <form
+          className="w-full max-w-6xl mx-auto space-y-4"
+          onSubmit={handleSubmit}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* LEFT SIDE → FILE UPLOADER */}
+            <div className="space-y-4">
+              {/* Drop Zone */}
+              <div
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                onDrop={onDrop}
+                onClick={() => fileInputRef.current.click()}
+                className={`p-10 border-2 border-dashed rounded-2xl ${
+                  isDragging
+                    ? "border-blue-500 bg-blue-500/10"
+                    : "border-white/10 bg-white/5"
+                }`}
+              >
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={(e) => handleFiles(e.target.files)}
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  className="hidden"
+                />
+
+                <Upload size={32} className="mx-auto text-gray-400" />
+                <p className="text-white mt-2 text-center">
+                  Drop or Click to Upload
+                </p>
+              </div>
+
+              {/* File List */}
+              <div className="space-y-2">
+                <AnimatePresence>
+                  {file && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 10 }}
+                      className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition"
+                      onClick={() => window.open(file.preview, "_blank")}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="text-blue-400">
+                          {file.type === "application/pdf" ? (
+                            <FileText size={20} />
+                          ) : (
+                            <ImageIcon size={20} />
+                          )}
+                        </div>
+
+                        <span className="text-sm text-white truncate max-w-[200px]">
+                          {file.name}
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeFile();
+                        }}
+                        className="p-1 hover:bg-white/10 rounded-full text-gray-400 hover:text-red-400"
+                      >
+                        <X size={18} />
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* RIGHT SIDE → FORM */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
+              <h3 className="text-white font-bold text-lg">Student Details</h3>
+
+              <input
+                type="text"
+                placeholder="Student ID"
+                name="student_id"
+                className="w-full p-3 rounded-lg bg-black/30 border border-white/10 text-white outline-none"
+                onChange={handleChange}
+              />
+
+              <input
+                type="text"
+                placeholder="Student Name"
+                name="student_name"
+                className="w-full p-3 rounded-lg bg-black/30 border border-white/10 text-white outline-none"
+                onChange={handleChange}
+              />
+
+              <input
+                type="text"
+                placeholder="Category (e.g. Sports)"
+                name="claimed_category"
+                className="w-full p-3 rounded-lg bg-black/30 border border-white/10 text-white outline-none"
+                onChange={handleChange}
+              />
+
+              <input
+                type="number"
+                placeholder="Claimed Points"
+                name="claimed_points"
+                className="w-full p-3 rounded-lg bg-black/30 border border-white/10 text-white outline-none"
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          <button
+            className="w-full px-6 py-3 bg-blue-600 text-white font-bold rounded-lg text-sm hover:bg-blue-500 transition-all active:scale-95"
+            type="submit"
           >
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={(e) => handleFiles(e.target.files)}
-              accept=".pdf,.jpg,.jpeg,.png"
-              multiple
-              className="hidden"
-            />
-
-            <Upload size={32} className="mx-auto text-gray-400" />
-            <p className="text-white mt-2">Drop or Click to Upload</p>
-          </div>
-
-          {/* Preview Section */}
-          <div className="space-y-2">
-            <AnimatePresence>
-              {files.map((file, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 10 }}
-                  className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition"
-                  onClick={() => window.open(file.preview, "_blank")}
-                >
-                  {/* File Info */}
-                  <div className="flex items-center gap-3">
-                    <div className="text-blue-400">
-                      {file.type === "application/pdf" ? (
-                        <FileText size={20} />
-                      ) : (
-                        <ImageIcon size={20} />
-                      )}
-                    </div>
-
-                    <span className="text-sm text-white truncate max-w-[200px]">
-                      {file.name}
-                    </span>
-                  </div>
-
-                  {/* Remove Button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation(); // prevent opening file
-                      removeFile(idx);
-                    }}
-                    className="p-1 hover:bg-white/10 rounded-full text-gray-400 hover:text-red-400"
-                  >
-                    <X size={18} />
-                  </button>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        </div>
+            Scan Documents and Details
+          </button>
+        </form>
       )}
     </motion.div>
   );

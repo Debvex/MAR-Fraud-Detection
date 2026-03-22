@@ -1,11 +1,19 @@
-import React, { useContext } from "react";
-import { FileText, CheckCircle, Clock, Calendar, Download, Database, Sparkles, Brain } from "lucide-react";
+import React, { useContext, useEffect, useState } from "react";
+import {
+  FileText,
+  CheckCircle,
+  Clock,
+  Calendar,
+  Download,
+  Database,
+  Sparkles,
+  Brain,
+} from "lucide-react";
 import { motion } from "motion/react";
 import Sidebar from "../components/dashboard/Sidebar";
 import Header from "../components/dashboard/Header";
 import StatCard from "../components/dashboard/StatCard";
 import ActivityFeed from "../components/dashboard/ActivityFeed";
-import InsightsPanel from "../components/dashboard/InsightsPanel";
 import { SideBarData } from "../context/SideBarContext";
 import TopBar from "../components/queue/TopBar";
 import UploadZone from "../components/queue/UploadZone";
@@ -15,9 +23,25 @@ import ConfidenceRadial from "../components/reports/ConfidenceRadial";
 import { ThroughputChart } from "../components/reports/ThroughputChart";
 import { ValidationErrors } from "../components/reports/ValidationErrors";
 import { ReportsTable } from "../components/reports/ReportsTable";
+import { fetchSummary } from "../components/dashboard/FetchSummary";
 
 export default function Home() {
   const { data, setSidebarData } = useContext(SideBarData);
+  const [summary, setSummary] = useState(null);
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const fetchSummaryData = await fetchSummary();
+        console.log("Fetched Summary Data:", fetchSummaryData);
+        setSummary(fetchSummaryData);
+      } catch (err) {
+        console.error("Error fetching summary:", err);
+      }
+    };
+
+    getData();
+  }, []);
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -59,21 +83,21 @@ export default function Home() {
               <StatCard
                 icon={FileText}
                 label="Average Risk Score"
-                value="12,842"
+                value={summary?.average_risk_score || 0}
                 trend="+14% vs LY"
                 progress={70}
               />
               <StatCard
                 icon={CheckCircle}
                 label="Rule Validation Rate"
-                value="99.2%"
+                value={summary?.rule_validation_rate || 0}
                 subtext="Hyper-Precision"
                 segments
               />
               <StatCard
                 icon={Clock}
                 label="Duplicate Rejection"
-                value="43"
+                value={summary?.duplicate_rejections || 0}
                 subtext="In Pipeline"
                 avatars
               />
@@ -81,12 +105,8 @@ export default function Home() {
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-              <div className="lg:col-span-8">
+              <div className="lg:col-span-12">
                 <ActivityFeed />
-              </div>
-
-              <div className="lg:col-span-4">
-                <InsightsPanel />
               </div>
             </div>
           </div>

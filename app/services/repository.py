@@ -17,6 +17,8 @@ def _read_all() -> list[dict]:
     if not SUBMISSIONS_STORE_PATH.exists():
         return []
     with SUBMISSIONS_STORE_PATH.open("r", encoding="utf-8") as file:
+        if not file:
+            return []
         return json.load(file)
 
 
