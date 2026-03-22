@@ -17,7 +17,7 @@ def _choose_tool_with_bound_llm(state: dict) -> dict | None:
     """Let the LLM choose the next tool via real tool binding."""
     api_key = get_openai_api_key()
     if not api_key:
-        return None
+        raise RuntimeError("OPENAI_API_KEY is required for the verification workflow.")
 
     available_tool_names = state.get("available_tools", list(TOOL_REGISTRY.keys()))
     tools = [TOOL_REGISTRY[name] for name in available_tool_names if name in TOOL_REGISTRY]
@@ -46,15 +46,15 @@ def _choose_tool_with_bound_llm(state: dict) -> dict | None:
     try:
         response = llm.invoke(messages)
     except Exception:
-        return None
+        return choose_next_verification_tool(state=state, available_tools=available_tool_names)
 
     tool_calls = getattr(response, "tool_calls", None) or []
     if not tool_calls:
-        return None
+        return choose_next_verification_tool(state=state, available_tools=available_tool_names)
 
     tool_name = tool_calls[0].get("name")
     if tool_name not in available_tool_names:
-        return None
+        raise RuntimeError(f"Planner selected an unknown tool: {tool_name}")
 
     return {
         "action": "run_tool",
@@ -86,10 +86,7 @@ def verification_agent_node(state):
             "logs": state.get("logs", []) + ["Agent forced the final decision due to iteration limit."],
         }
 
-    plan = _choose_tool_with_bound_llm(state) or choose_next_verification_tool(
-        state=state,
-        available_tools=list(TOOL_REGISTRY.keys()),
-    )
+    plan = _choose_tool_with_bound_llm(state)
     action = plan.get("action", "run_tool")
     if action == "route_review" and state.get("decision"):
         return {

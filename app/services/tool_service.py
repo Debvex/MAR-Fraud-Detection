@@ -148,18 +148,10 @@ def issuer_verification_tool(state_snapshot: dict[str, Any]) -> dict[str, Any]:
 def decision_tool(state_snapshot: dict[str, Any]) -> dict[str, Any]:
     """Recommend the final review route from the full state."""
     llm_review = review_final_decision(state_snapshot)
-    heuristic_decision = "admin_review" if state_snapshot.get("suspicious", False) else "likely_valid"
-    risk_score = max(
-        0,
-        min(100, int(state_snapshot.get("risk_score", 0) + llm_review.get("risk_score_adjustment", 0))),
-    )
-    llm_decision = llm_review.get("decision", heuristic_decision)
-    decision = "admin_review" if heuristic_decision == "admin_review" or llm_decision == "admin_review" else "likely_valid"
     return {
-        "decision": decision,
-        "risk_score": risk_score,
-        "suspicious": decision == "admin_review",
-        "decision_confidence": llm_review.get("confidence", 0.85),
+        "decision": llm_review["decision"],
+        "suspicious": llm_review["decision"] == "admin_review",
+        "decision_confidence": llm_review["confidence"],
         "llm_decision_review": llm_review,
         "verification_complete": True,
     }
