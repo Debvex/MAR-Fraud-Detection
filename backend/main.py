@@ -13,6 +13,11 @@ import uvicorn
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
+try:
+    from openai import APIConnectionError, APIStatusError, AuthenticationError
+except ImportError:  # pragma: no cover
+    APIConnectionError = AuthenticationError = APIStatusError = Exception
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -34,8 +39,13 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="MAR Fraud Detection API", version="1.0.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -48,6 +58,16 @@ def _save_upload(upload: UploadFile) -> Path:
     with target.open("wb") as file:
         shutil.copyfileobj(upload.file, file)
     return target
+
+
+def _workflow_error_detail(exc: Exception) -> str:
+    if isinstance(exc, AuthenticationError):
+        return "OpenAI authentication failed. Check OPENAI_API_KEY in the backend environment."
+    if isinstance(exc, APIConnectionError):
+        return "The backend could not reach the OpenAI API. Check network or proxy settings."
+    if isinstance(exc, APIStatusError):
+        return f"OpenAI request failed with status {exc.status_code}."
+    return str(exc) or "Submission processing failed."
 
 
 def _to_summary(record: dict) -> SubmissionSummary:
@@ -108,14 +128,19 @@ def upload_submission(
     claimed_points: int = Form(...),
 ):
     saved_path = _save_upload(file)
-    record = process_submission(
-        file_path=str(saved_path),
-        student_id=student_id,
-        student_name=student_name,
-        claimed_category=claimed_category,
-        claimed_points=claimed_points,
-        file_name=file.filename or saved_path.name,
-    )
+    try:
+        record = process_submission(
+            file_path=str(saved_path),
+            student_id=student_id,
+            student_name=student_name,
+            claimed_category=claimed_category,
+            claimed_points=claimed_points,
+            file_name=file.filename or saved_path.name,
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=_workflow_error_detail(exc)) from exc
     return _to_detail(record)
 
 
