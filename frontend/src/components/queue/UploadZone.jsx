@@ -121,25 +121,25 @@ function UploadZone({ onUploadSuccess }) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-surface border border-white/5 rounded-2xl p-10 flex flex-col items-center justify-center text-center group cursor-pointer hover:bg-surface-container transition-all duration-300"
+      className="bg-surface border border-white/5 rounded-2xl p-5 sm:p-8 md:p-10 flex flex-col items-center justify-center text-center group cursor-pointer hover:bg-surface-container transition-all duration-300"
     >
-      <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-6">
-        <UploadCloud className="text-primary" size={32} />
+      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-4 sm:mb-6">
+        <UploadCloud className="text-primary" size={24} className="sm:w-[32px] sm:h-[32px]" />
       </div>
 
-      <h3 className="text-lg font-bold text-white mb-2">
+      <h3 className="text-base sm:text-lg font-bold text-white mb-2">
         Upload MAR Certificate
       </h3>
 
       {!isFileUploaderOpen && (
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
           <button
-            className="px-6 py-2 bg-primary-container text-[#001a41] font-bold rounded-lg text-sm hover:opacity-90 transition-opacity active:scale-95"
+            className="px-4 sm:px-6 py-2 bg-primary-container text-[#001a41] font-bold rounded-lg text-xs sm:text-sm hover:opacity-90 transition-opacity active:scale-95 flex-1 sm:flex-none"
             onClick={() => setIsFileUploaderOpen(true)}
           >
             Select Files and Fill Details
           </button>
-          <button className="px-6 py-2 bg-white/5 text-white font-bold rounded-lg text-sm hover:bg-white/10 transition-all active:scale-95">
+          <button className="px-4 sm:px-6 py-2 bg-white/5 text-white font-bold rounded-lg text-xs sm:text-sm hover:bg-white/10 transition-all active:scale-95 flex-1 sm:flex-none">
             Bulk Import
           </button>
         </div>
@@ -150,7 +150,7 @@ function UploadZone({ onUploadSuccess }) {
           className="w-full max-w-6xl mx-auto space-y-4"
           onSubmit={handleSubmit}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             {/* LEFT SIDE → FILE UPLOADER */}
             <div className="space-y-4">
               {/* Drop Zone */}
@@ -159,10 +159,10 @@ function UploadZone({ onUploadSuccess }) {
                 onDragLeave={onDragLeave}
                 onDrop={onDrop}
                 onClick={() => fileInputRef.current.click()}
-                className={`p-10 border-2 border-dashed rounded-2xl ${
+                className={`p-6 sm:p-10 border-2 border-dashed rounded-2xl transition-colors ${
                   isDragging
                     ? "border-blue-500 bg-blue-500/10"
-                    : "border-white/10 bg-white/5"
+                    : "border-white/10 bg-white/5 hover:border-white/20"
                 }`}
               >
                 <input
@@ -173,8 +173,8 @@ function UploadZone({ onUploadSuccess }) {
                   className="hidden"
                 />
 
-                <Upload size={32} className="mx-auto text-gray-400" />
-                <p className="text-white mt-2 text-center">
+                <Upload size={24} className="mx-auto text-gray-400 sm:w-[32px] sm:h-[32px]" />
+                <p className="text-white mt-2 text-xs sm:text-sm text-center">
                   Drop or Click to Upload
                 </p>
               </div>
@@ -190,16 +190,16 @@ function UploadZone({ onUploadSuccess }) {
                       className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition"
                       onClick={() => window.open(file.preview, "_blank")}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="text-blue-400">
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                        <div className="text-blue-400 flex-shrink-0">
                           {file.type === "application/pdf" ? (
-                            <FileText size={20} />
+                            <FileText size={18} className="sm:w-[20px] sm:h-[20px]" />
                           ) : (
-                            <ImageIcon size={20} />
+                            <ImageIcon size={18} className="sm:w-[20px] sm:h-[20px]" />
                           )}
                         </div>
 
-                        <span className="text-sm text-white truncate max-w-[200px]">
+                        <span className="text-xs sm:text-sm text-white truncate">
                           {file.name}
                         </span>
                       </div>
@@ -209,9 +209,9 @@ function UploadZone({ onUploadSuccess }) {
                           e.stopPropagation();
                           removeFile();
                         }}
-                        className="p-1 hover:bg-white/10 rounded-full text-gray-400 hover:text-red-400"
+                        className="p-1 hover:bg-white/10 rounded-full text-gray-400 hover:text-red-400 flex-shrink-0"
                       >
-                        <X size={18} />
+                        <X size={16} className="sm:w-[18px] sm:h-[18px]" />
                       </button>
                     </motion.div>
                   )}
@@ -220,14 +220,14 @@ function UploadZone({ onUploadSuccess }) {
             </div>
 
             {/* RIGHT SIDE → FORM */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
-              <h3 className="text-white font-bold text-lg">Student Details</h3>
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 space-y-3 sm:space-y-4">
+              <h3 className="text-white font-bold text-base sm:text-lg">Student Details</h3>
 
               <input
                 type="text"
                 placeholder="Student ID"
                 name="student_id"
-                className="w-full p-3 rounded-lg bg-black/30 border border-white/10 text-white outline-none"
+                className="w-full p-2 sm:p-3 rounded-lg bg-black/30 border border-white/10 text-white text-sm outline-none focus:border-primary/50"
                 onChange={handleChange}
               />
 
@@ -235,7 +235,7 @@ function UploadZone({ onUploadSuccess }) {
                 type="text"
                 placeholder="Student Name"
                 name="student_name"
-                className="w-full p-3 rounded-lg bg-black/30 border border-white/10 text-white outline-none"
+                className="w-full p-2 sm:p-3 rounded-lg bg-black/30 border border-white/10 text-white text-sm outline-none focus:border-primary/50"
                 onChange={handleChange}
               />
 
@@ -243,7 +243,7 @@ function UploadZone({ onUploadSuccess }) {
                 type="text"
                 placeholder="Category (e.g. Sports)"
                 name="claimed_category"
-                className="w-full p-3 rounded-lg bg-black/30 border border-white/10 text-white outline-none"
+                className="w-full p-2 sm:p-3 rounded-lg bg-black/30 border border-white/10 text-white text-sm outline-none focus:border-primary/50"
                 onChange={handleChange}
               />
 
@@ -251,21 +251,21 @@ function UploadZone({ onUploadSuccess }) {
                 type="number"
                 placeholder="Claimed Points"
                 name="claimed_points"
-                className="w-full p-3 rounded-lg bg-black/30 border border-white/10 text-white outline-none"
+                className="w-full p-2 sm:p-3 rounded-lg bg-black/30 border border-white/10 text-white text-sm outline-none focus:border-primary/50"
                 onChange={handleChange}
               />
             </div>
           </div>
 
           <button
-            className="w-full px-6 py-3 bg-blue-600 text-white font-bold rounded-lg text-sm hover:bg-blue-500 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white font-bold rounded-lg text-xs sm:text-sm hover:bg-blue-500 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
             type="submit"
             disabled={isSubmitting}
           >
             {isSubmitting ? "Processing Upload..." : "Scan Documents and Details"}
           </button>
           {errorMessage && (
-            <p className="text-sm text-red-400">{errorMessage}</p>
+            <p className="text-xs sm:text-sm text-red-400">{errorMessage}</p>
           )}
         </form>
       )}

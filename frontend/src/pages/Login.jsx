@@ -16,18 +16,18 @@ const InputField = ({
 }) => (
   <div className="space-y-2">
     <div className="relative group">
-      <div className="absolute inset-y-0 left-3 flex items-center text-gray-500 group-focus-within:text-blue-500 transition-colors">
-        <Icon size={18} />
+      <div className="absolute inset-y-0 left-3 flex items-center text-gray-500 group-focus-within:text-blue-500 transition-colors pointer-events-none">
+        <Icon size={16} className="sm:w-[18px] sm:h-[18px]" />
       </div>
       <input
         type={type}
         placeholder={placeholder}
         onChange={onChange}
         name={name}
-        className="w-full bg-black/40 border border-white/10 rounded-lg py-3 pl-10 pr-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+        className="w-full bg-black/40 border border-white/10 rounded-lg py-2 sm:py-3 pl-9 sm:pl-10 pr-3 sm:pr-4 text-xs sm:text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
         required
       />
-      <label className="absolute -top-2 left-3 bg-gray-950 px-1 text-[10px] text-gray-500 uppercase font-bold tracking-widest">
+      <label className="absolute -top-2 left-3 bg-gray-950 px-1 text-[8px] sm:text-[10px] text-gray-500 uppercase font-bold tracking-widest">
         {label}
       </label>
     </div>
@@ -97,10 +97,10 @@ const Login = () => {
     },
   });
   return (
-    <div className="min-h-screen bg-gray-950 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-gray-900 via-gray-950 to-black flex flex-col items-center justify-center p-6 font-sans">
-      {/* Background Grid Pattern */}
+    <div className="min-h-screen bg-gray-950 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-gray-900 via-gray-950 to-black flex flex-col items-center justify-center p-4 sm:p-6 font-sans">
+      {/* Background Grid Pattern - Hidden on mobile for performance */}
       <div
-        className="absolute inset-0 z-0 opacity-20"
+        className="absolute inset-0 z-0 opacity-20 hidden sm:block"
         style={{
           backgroundImage:
             "linear-gradient(#1e293b 1px, transparent 1px), linear-gradient(90deg, #1e293b 1px, transparent 1px)",
@@ -108,23 +108,23 @@ const Login = () => {
         }}
       ></div>
 
-      <div className="relative z-10 w-full max-w-md space-y-8">
+      <div className="relative z-10 w-full max-w-md space-y-6 sm:space-y-8">
         {/* Header Section */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 mb-4">
-            <Shield size={24} />
+          <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 mb-3 sm:mb-4">
+            <Shield size={20} className="sm:w-[24px] sm:h-[24px]" />
           </div>
-          <h1 className="text-4xl font-black text-white tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
             Welcome Back
           </h1>
-          <p className="text-xs font-mono text-gray-500 tracking-[0.2em] uppercase">
+          <p className="text-[8px] sm:text-xs font-mono text-gray-500 tracking-[0.2em] uppercase">
             Secure_Access_Node_01
           </p>
         </div>
 
         {/* Main Card */}
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8 shadow-2xl">
+          <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
             <InputField
               icon={Mail}
               type="email"
@@ -142,7 +142,7 @@ const Login = () => {
               onChange={handleChange}
             />
 
-            <div className="flex items-center justify-between text-xs">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 text-[10px] sm:text-xs">
               <label className="flex items-center gap-2 text-gray-400 cursor-pointer group">
                 <input
                   type="checkbox"
@@ -161,18 +161,19 @@ const Login = () => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.3)] transition-all"
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 sm:py-4 rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.3)] transition-all text-sm sm:text-base"
             >
-              INITIALIZE SESSION <ArrowRight size={18} />
+              INITIALIZE SESSION{" "}
+              <ArrowRight size={16} className="sm:w-[18px] sm:h-[18px]" />
             </motion.button>
           </form>
 
           {/* Divider */}
-          <div className="relative my-8">
+          <div className="relative my-6 sm:my-8">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-white/5"></span>
             </div>
-            <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-[0.3em] text-gray-600 bg-transparent px-4">
+            <div className="relative flex justify-center text-[7px] sm:text-[10px] uppercase font-bold tracking-[0.3em] text-gray-600 bg-transparent px-4">
               OR CONNECT VIA
             </div>
           </div>
@@ -180,18 +181,18 @@ const Login = () => {
           {/* Social Login */}
           <button
             onClick={() => googleLogin()}
-            className="w-full rounded-xl bg-white/5 border border-white/10 p-3 hover:bg-white/10 transition-all flex items-center justify-center gap-2"
+            className="w-full rounded-xl bg-white/5 border border-white/10 p-2 sm:p-3 hover:bg-white/10 transition-all flex items-center justify-center gap-2 text-xs sm:text-sm"
           >
             <img
               src="https://www.google.com/favicon.ico"
               alt="google"
-              className="w-5 h-5"
+              className="w-4 h-4 sm:w-5 sm:h-5"
             />
             Continue with Google
           </button>
 
           {/* Signup Link */}
-          <div className="text-center mt-6 text-xs text-gray-400">
+          <div className="text-center mt-4 sm:mt-6 text-[10px] sm:text-xs text-gray-400">
             Don't have an account?{" "}
             <Link
               to="/signup"

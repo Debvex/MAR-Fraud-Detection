@@ -67,42 +67,42 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-screen w-screen overflow-hidden bg-background">
       <Sidebar />
 
       {data === "dashboard" && (
         <main className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
           <Header />
 
-          <div className="flex-1 overflow-y-auto p-8 space-y-10 scroll-smooth custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 md:space-y-10 scroll-smooth custom-scrollbar">
             {/* Page Header */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="flex justify-between items-end"
+              className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 pt-10 sm:pt-0"
             >
-              <div>
-                <p className="text-[10px] font-black text-primary tracking-[0.3em] uppercase mb-2">
+              <div className="w-full sm:w-auto">
+                <p className="text-[8px] sm:text-[10px] font-black text-primary tracking-[0.3em] uppercase mb-2">
                   MAR Certificate Verification
                 </p>
-                <h2 className="text-4xl font-black tracking-tighter text-white">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tighter text-white">
                   MAR Fraud Analysis Dashboard
                 </h2>
               </div>
 
-              <div className="hidden sm:flex items-center gap-3 bg-surface-container px-4 py-2 rounded-xl border border-outline-variant/10">
+              <div className="hidden sm:flex items-center gap-3 bg-surface-container px-4 py-2 rounded-xl border border-outline-variant/10 flex-shrink-0 mt-4 sm:mt-0">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span>
                 </span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-outline">
+                <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-outline whitespace-nowrap">
                   Neural Engine Active
                 </span>
               </div>
             </motion.div>
 
             {/* Bento Grid Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
               <StatCard
                 icon={FileText}
                 label="Average Risk Score"
@@ -127,7 +127,7 @@ export default function Home() {
             </div>
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10">
               <div className="lg:col-span-12">
                 <ActivityFeed refreshKey={dashboardRefreshKey} />
               </div>
@@ -140,21 +140,21 @@ export default function Home() {
         <main className="flex-1 flex flex-col min-w-0">
           <TopBar />
 
-          <div className="flex-1 overflow-y-auto p-8 space-y-8">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 md:space-y-8">
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="space-y-1"
             >
-              <h2 className="text-3xl font-bold tracking-tight">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">
                 Certificate Ingestion Queue
               </h2>
-              <p className="text-white/40 text-sm">
+              <p className="text-xs sm:text-sm text-white/40">
                 Automated MAR certificate verification via Langchain Workflow
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
               <div className="lg:col-span-2">
                 <UploadZone onUploadSuccess={handleUploadSuccess} />
               </div>
@@ -172,46 +172,46 @@ export default function Home() {
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
           <TopBar />
 
-          <main className="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar">
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 md:p-10 space-y-6 md:space-y-10 custom-scrollbar">
             {/* Header Section */}
-            <header className="flex flex-col md:flex-row justify-between items-end gap-8">
+            <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-8">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <h1 className="text-4xl font-black text-[#e1e2eb] tracking-tighter mb-3">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#e1e2eb] tracking-tighter mb-2 md:mb-3">
                   Reports & Analytics
                 </h1>
-                <p className="text-[#e1e2eb]/40 max-w-2xl text-sm leading-relaxed font-medium">
+                <p className="text-xs sm:text-sm text-[#e1e2eb]/40 max-w-2xl leading-relaxed font-medium">
                   Aggregate intelligence from the Report Node. High-confidence
                   document processing metrics and actionable validation
                   insights.
                 </p>
               </motion.div>
 
-              <div className="flex gap-4">
-                <div className="px-5 py-3 bg-surface rounded-xl flex items-center gap-3 border border-white/5 hover:border-white/10 transition-all cursor-pointer group">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full md:w-auto">
+                <div className="px-3 sm:px-5 py-2 sm:py-3 bg-surface rounded-xl flex items-center gap-3 border border-white/5 hover:border-white/10 transition-all cursor-pointer group text-sm sm:text-base">
                   <Calendar
-                    size={16}
-                    className="text-primary group-hover:scale-110 transition-transform"
+                    size={14}
+                    className="text-primary group-hover:scale-110 transition-transform flex-shrink-0"
                   />
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#e1e2eb]/60">
+                  <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-[#e1e2eb]/60 whitespace-nowrap">
                     Last 30 Days
                   </span>
                 </div>
-                <button className="bg-surface px-6 py-3 rounded-xl text-xs font-black uppercase tracking-[0.2em] text-[#e1e2eb] hover:bg-[#32353c] border border-white/5 transition-all flex items-center gap-3 group">
+                <button className="bg-surface px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-[8px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#e1e2eb] hover:bg-[#32353c] border border-white/5 transition-all flex items-center justify-center gap-2 md:gap-3 group flex-1 md:flex-none">
                   Export .CSV
                   <Download
-                    size={14}
-                    className="text-primary group-hover:translate-y-0.5 transition-transform"
+                    size={12}
+                    className="text-primary group-hover:translate-y-0.5 transition-transform flex-shrink-0"
                   />
                 </button>
               </div>
             </header>
 
             {/* Analytics Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8">
               <motion.div
                 className="lg:col-span-4"
                 initial={{ opacity: 0, y: 20 }}
@@ -231,7 +231,7 @@ export default function Home() {
             </div>
 
             {/* Tables & Errors Grid */}
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 md:gap-8">
               <motion.div
                 className="xl:col-span-4"
                 initial={{ opacity: 0, y: 20 }}
@@ -251,7 +251,7 @@ export default function Home() {
             </div>
 
             {/* Footer Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 pb-10">
               <StatCard
                 icon={Calendar}
                 label="Avg Processing Time"
@@ -272,9 +272,9 @@ export default function Home() {
             </div>
           </main>
 
-          {/* Background Decoration */}
-          <div className="fixed top-0 right-0 -z-10 w-200 h-200 bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
-          <div className="fixed bottom-0 left-0 -z-10 w-150 h-150 bg-tertiary/5 blur-[120px] rounded-full pointer-events-none" />
+          {/* Background Decoration - Hidden on mobile for performance */}
+          <div className="hidden md:block fixed top-0 right-0 -z-10 w-200 h-200 bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
+          <div className="hidden md:block fixed bottom-0 left-0 -z-10 w-150 h-150 bg-tertiary/5 blur-[120px] rounded-full pointer-events-none" />
         </div>
       )}
 
