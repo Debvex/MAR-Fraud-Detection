@@ -12,14 +12,24 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+# def _read_all() -> list[dict]:
+#     ensure_app_directories()
+#     if not SUBMISSIONS_STORE_PATH.exists():
+#         return []
+#     with SUBMISSIONS_STORE_PATH.open("r", encoding="utf-8") as file:
+#         if not file:
+#             return []
+#         return json.load(file)
+
 def _read_all() -> list[dict]:
     ensure_app_directories()
     if not SUBMISSIONS_STORE_PATH.exists():
         return []
-    with SUBMISSIONS_STORE_PATH.open("r", encoding="utf-8") as file:
-        if not file:
-            return []
-        return json.load(file)
+    try:
+        with SUBMISSIONS_STORE_PATH.open("r", encoding="utf-8") as file:
+            return json.load(file)
+    except json.JSONDecodeError:
+        return []
 
 
 def _write_all(items: list[dict]) -> None:
