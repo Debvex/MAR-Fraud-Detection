@@ -37,8 +37,8 @@ const ActivityFeed = ({ refreshKey = 0 }) => {
       subtitle: `${item.file_name} • Risk: ${riskScore}%`,
       status: reviewStatus,
       time: new Date(item.created_at).toLocaleString(),
-      bgColor: riskScore > 70 ? "bg-red-500/10" : "bg-green-500/10",
-      color: riskScore > 70 ? "text-red-400" : "text-green-400",
+      bgColor: riskScore > 50 ? "bg-red-500/10" : "bg-green-500/10",
+      color: riskScore > 50 ? "text-red-400" : "text-green-400",
       icon: item.processing_status === "completed" ? CheckCircle : Clock,
     };
   });

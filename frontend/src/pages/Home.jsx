@@ -35,6 +35,7 @@ export default function Home() {
       try {
         const fetchSummaryData = await fetchSummary();
         setSummary(fetchSummaryData);
+        console.log("Fetched summary data:", fetchSummaryData);
       } catch (err) {
         console.error("Error fetching summary:", err);
       }
