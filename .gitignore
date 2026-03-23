@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Python
 __pycache__/
 *.py[cod]
@@ -56,8 +55,7 @@ frontend/coverage/
 # Editors and IDEs
 .idea/
 .vscode/
-=======
 .venv
 __pycache__
 .cache
->>>>>>> 97c3db032e08b735b9b772a206da89098e41c740
+/*.png
