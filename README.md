@@ -4,14 +4,14 @@
 
 ## MAR Certificate Fraud Detection
 
-A beginner-friendly agentic AI app for MAR certificate verification and fraud analysis. MAR(Mandatory Additional Requirements) are required in colleges and universities to meet a certain complementary credit points which comprises of external certifications and rewards. Students try to cheat their way in this for submission of these MAR points therefore this project detects the fake ones (calculates risk score and decides whether their certificates requires admin review or not through an agentic workflow).
+A simple agentic AI app for MAR certificate verification and fraud analysis. MAR(Mandatory Additional Requirements) are required in colleges and universities to meet a certain complementary credit points which comprises of external certifications and rewards. Students try to cheat their way in this for submission of these MAR points therefore this project detects the fake ones (calculates risk score and decides whether their certificates requires admin review or not through an agentic workflow).
 
 This project uses:
 
 - `LangGraph` for the workflow
 - `LangChain @tool` tools for verification actions
 - `OpenAI` for tool selection and explanation
-- `FastAPI` for backend APIs
+- `FastAPI` for app APIs
 
 This README reflects the current implemented system.
 
@@ -19,7 +19,7 @@ This README reflects the current implemented system.
 
 ## Overview
 
-For each uploaded certificate, the backend:
+For each uploaded certificate, the app:
 
 1. stores the file locally,
 2. starts an agentic verification workflow,
@@ -164,11 +164,11 @@ This means the system is:
 
 ---
 
-## Backend API Workflow
+## app API Workflow
 
-The backend is intentionally simple and exposes only the main working routes.
+The app is intentionally simple and exposes only the main working routes.
 
-### Backend API Diagram
+### app API Diagram
 
 ```mermaid
 flowchart TD
@@ -190,7 +190,7 @@ flowchart TD
 ## Current Active API Routes
 
 ### `GET /api/health`
-Checks whether the backend is running.
+Checks whether the app is running.
 
 Example:
 
@@ -250,7 +250,7 @@ The file is saved locally in:
 
 - `app/data/uploads/`
 
-The backend stores it with a generated UUID filename and then passes the saved local path into the workflow.
+The app stores it with a generated UUID filename and then passes the saved local path into the workflow.
 
 So:
 
@@ -284,8 +284,8 @@ So:
 - [base.py](d:/Projects/MAR-Fraud-Detection/app/services/adapters/base.py)
 - [ieee_adapter.py](d:/Projects/MAR-Fraud-Detection/app/services/adapters/ieee_adapter.py)
 
-### Backend
-- [main.py](d:/Projects/MAR-Fraud-Detection/backend/main.py)
+### app
+- [main.py](d:/Projects/MAR-Fraud-Detection/app/main.py)
 - [schemas.py](d:/Projects/MAR-Fraud-Detection/backend/schemas.py)
 
 ---
@@ -347,10 +347,10 @@ OPENAI_API_KEY=your_openai_api_key_here
 
 ---
 
-## Run The Backend
+## Run The app
 
 ```powershell
-.venv\Scripts\python.exe -m uvicorn backend.main:app --reload
+.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
 Swagger docs:
@@ -403,7 +403,7 @@ This demonstrates:
 - bounded agentic verification
 - tool-driven checking
 - issuer-specific verification support
-- backend API readiness for dashboard integration
+- app API readiness for dashboard integration
 
 ---
 
@@ -421,7 +421,7 @@ This demonstrates:
 
 ## Summary
 
-This project is now a beginner-friendly backend-only agentic fraud analysis system with:
+This project is now a simple agentic fraud analysis system with:
 
 - a LangGraph planner-and-tool-runner loop
 - LangChain `@tool` verification tools
