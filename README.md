@@ -4,7 +4,7 @@
 
 ## MAR Certificate Fraud Detection
 
-A beginner-friendly backend for MAR certificate verification and fraud analysis.MAR(Mandatory Additional Requirements) are required in colleges and universities to meet a certain complementary credit points which comprises of external certifications and rewards. Students try to cheat their way in this for submission of these MAR points therefore this project detects the fake ones (calculates risk score and decides whether their certificates requires admin review or not through an agentic workflow).
+A beginner-friendly agentic AI app for MAR certificate verification and fraud analysis. MAR(Mandatory Additional Requirements) are required in colleges and universities to meet a certain complementary credit points which comprises of external certifications and rewards. Students try to cheat their way in this for submission of these MAR points therefore this project detects the fake ones (calculates risk score and decides whether their certificates requires admin review or not through an agentic workflow).
 
 This project uses:
 
