@@ -1,6 +1,5 @@
 # Project for the BINARY v2 Hackathon
-- Participation Ticket:
-![BINARY-TICKET_jepszi.png](https://res.cloudinary.com/dvcvbkmpt/image/upload/v1773162570/BINARY-TICKET_jepszi.png)
+
 
 ## MAR Certificate Fraud Detection
 
